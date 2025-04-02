@@ -1,7 +1,7 @@
 # fairness_eval.py
 import math
 
-FALLBACK_PREF_RANK = 10**6
+FALLBACK_PREF_RANK = 100
 
 def get_student_pref_index(student_id, college_id, rank_matrix):
     return rank_matrix.get(student_id, {}).get(college_id, FALLBACK_PREF_RANK)
@@ -60,3 +60,4 @@ def weighted_log_rank(ranks):
         val += r_max * math.log(r_max)
     val += abs(r_max - r_min)
     return val
+

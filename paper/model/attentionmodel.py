@@ -87,9 +87,22 @@ class FairMatchingGNN(nn.Module):
         scores = torch.stack(edge_scores).squeeze(-1)
 
         if self.norm_layer:
-            scores = self.norm_layer(scores)
+            num_students = edge_index[0].max().item() + 1
+            num_colleges = edge_index[1].max().item() - num_students + 1
 
-        return scores
+            # Sanity check: num_students * num_colleges should match score count
+            expected_edges = num_students * num_colleges
+            assert scores.shape[0] == expected_edges, (
+                f"Expected {expected_edges} scores, got {scores.shape[0]}. "
+                "Sinkhorn requires a full bipartite graph."
+            )
+
+            # Reshape to 2D (N x M), normalize, flatten back
+            score_matrix = scores.view(num_students, num_colleges)
+            score_matrix = self.norm_layer(score_matrix)
+            scores = score_matrix.view(-1)
+
+            return scores
 
     def compute_loss(self, scores, rank_matrix, edge_index, s_idx, c_idx):
         loss = 0.0
