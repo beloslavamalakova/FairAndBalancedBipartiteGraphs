@@ -3,6 +3,7 @@ from attentionmodel import FairMatchingGNN
 from train import train
 from eval import evaluate_model, make_priority_functions
 from paper.data_structs import load_dense_dataset, load_sparse_dataset, FALLBACK_PREF_RANK
+from custom_loss import compute_custom_loss
 from torch_geometric.data import Data
 import random
 
@@ -13,11 +14,17 @@ DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 EPOCHS = 25
 LR = 1e-3
 OPT_TYPE = "AdamW"
-LOSS_TYPE = "SmoothL1"
+LOSS_TYPE = "SmoothL1"  # This is still used internally in the model for prediction
 HIDDEN_DIM = 64
 NUM_LAYERS = 6
 USE_SPARSE = True  # Toggle between dense and sparse
 
+# Lambda weights for custom loss
+LAMBDA_PRED = 0.1
+LAMBDA_EFK = 2.0
+LAMBDA_WLR = 2.0
+LAMBDA_AVG_S = 1.0
+LAMBDA_AVG_C = 1.0
 
 def build_pyg_data_dense(students, colleges):
     s_ids = list(students.keys())
@@ -43,7 +50,6 @@ def build_pyg_data_dense(students, colleges):
     edge_attr = torch.tensor(edges_attr, dtype=torch.float)
     data = Data(x=node_feats, edge_index=edge_index, edge_attr=edge_attr)
     return data, s_idx, c_idx, rank_matrix
-
 
 def build_pyg_data_sparse(students, colleges):
     s_ids = list(students.keys())
@@ -91,14 +97,24 @@ def main():
         loss_type=LOSS_TYPE
     ).to(DEVICE)
 
+    # Priorities for EF-k evaluation
+    priorities = make_priority_functions(colleges)
+
+    # Initialize loss
     # Train
-    train(model, data, s_idx, c_idx, rank_matrix,
-          lr=LR, epochs=EPOCHS, opt_type=OPT_TYPE)
+    train(
+        model, data, s_idx, c_idx, rank_matrix,
+        lr=LR, epochs=EPOCHS, opt_type=OPT_TYPE,
+        lambda_pred=LAMBDA_PRED,
+        lambda_efk=LAMBDA_EFK,
+        lambda_wlr=LAMBDA_WLR,
+        lambda_avg_s=LAMBDA_AVG_S,
+        lambda_avg_c=LAMBDA_AVG_C
+    )
+
 
     # Evaluate
-    priorities = make_priority_functions(colleges)
     evaluate_model(model, data, s_idx, c_idx, rank_matrix, students, priorities)
-    #evaluate_model(model, data, s_idx, c_idx, rank_matrix)
 
 if __name__ == '__main__':
     main()
