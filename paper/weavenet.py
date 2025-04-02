@@ -84,6 +84,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import MessagePassing
 
+
 class WeaveNet(nn.Module):
     def __init__(self, node_dim, edge_dim, hidden_dim=64, num_layers=4):
         super().__init__()

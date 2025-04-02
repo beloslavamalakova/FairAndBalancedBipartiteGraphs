@@ -4,7 +4,7 @@ import torch
 import random
 import copy
 from torch_geometric.data import Data
-
+import random
 from data_structs import load_sparse_dataset, FALLBACK_PREF_RANK
 from classical_algs import gale_shapley_deferred_acceptance, serial_dictatorship, acda
 from fairness_eval import (
@@ -72,9 +72,6 @@ def build_pyg_data_sparse_partial(students_fixed, fallback=100):
     We'll omit edges for any (sid,cid) that is at fallback rank.
     This yields partial adjacency, drastically reducing MSE from unranked pairs.
     """
-    from torch_geometric.data import Data
-    import torch
-    import random
 
     s_ids = sorted(students_fixed.keys())
     # We assume you have a separate colleges_fixed or just do range(...) if you want
@@ -139,7 +136,6 @@ def main():
     priorities = {cid: colleges_fixed[cid]['priority'] for cid in colleges_fixed}
 
     # 4) GALE-SHAPLEY
-    import copy
     gs_students = copy.deepcopy(students_fixed)
     gs_colleges = copy.deepcopy(colleges_fixed)
     gs_match = gale_shapley_deferred_acceptance(gs_students, gs_colleges)
