@@ -19,12 +19,11 @@ HIDDEN_DIM = 64
 NUM_LAYERS = 6
 USE_SPARSE = True  # Toggle between dense and sparse
 
-# Lambda weights for custom loss
-LAMBDA_PRED = 0.1
-LAMBDA_EFK = 2.0
-LAMBDA_WLR = 2.0
-LAMBDA_AVG_S = 1.0
-LAMBDA_AVG_C = 1.0
+# Lambda weights for custom loss, removed EF-K due to computational problems
+LAMBDA_PRED = 0.5
+LAMBDA_WLR = 1.0
+LAMBDA_AVG_S = 0.5
+LAMBDA_AVG_C = 0.5
 
 def build_pyg_data_dense(students, colleges):
     s_ids = list(students.keys())
@@ -106,7 +105,6 @@ def main():
         model, data, s_idx, c_idx, rank_matrix,
         lr=LR, epochs=EPOCHS, opt_type=OPT_TYPE,
         lambda_pred=LAMBDA_PRED,
-        lambda_efk=LAMBDA_EFK,
         lambda_wlr=LAMBDA_WLR,
         lambda_avg_s=LAMBDA_AVG_S,
         lambda_avg_c=LAMBDA_AVG_C

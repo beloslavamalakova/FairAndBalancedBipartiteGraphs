@@ -18,12 +18,13 @@ def train(model, data, s_idx, c_idx, rank_matrix,
 
     model.train()
     for epoch in range(epochs):
+        print(f"Starting Epoch {epoch+1}/{epochs}...")  # checking if it works
         optimizer.zero_grad()
         scores = model(data)
+        print("Forward pass complete.")  # checking if it works
         loss = compute_custom_loss(
             scores, data.edge_index, s_idx, c_idx, rank_matrix,
             lambda_pred=lambda_pred,
-            lambda_efk=lambda_efk,
             lambda_wlr=lambda_wlr,
             lambda_avg_s=lambda_avg_s,
             lambda_avg_c=lambda_avg_c
@@ -31,3 +32,4 @@ def train(model, data, s_idx, c_idx, rank_matrix,
         loss.backward()
         optimizer.step()
         print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
+
